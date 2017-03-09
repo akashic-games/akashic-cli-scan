@@ -279,7 +279,7 @@ export class Configuration extends cmn.Configuration {
 					_assertAssetTypeNoConflict(aid, filepath, "audio", assets[aid].type);
 				});
 			})
-			.then(() => getAudioDuration(path.join(this._basepath, filepath)))
+			.then(() => getAudioDuration(path.join(this._basepath, filepath), this._logger))
 			.then((duration: number) => {
 				return {
 					basename: basename,

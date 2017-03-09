@@ -3,12 +3,15 @@ import * as path from "path";
 import * as aacDuration from "aac-duration";
 import * as musicMetaData from "musicmetadata";
 import { mp4Inspector } from "thumbcoil";
+import * as cmn from "@akashic/akashic-cli-commons";
 
-export function getAudioDuration(filepath: string): Promise<number> {
+export function getAudioDuration(filepath: string, logger?: cmn.Logger): Promise<number> {
 	var ext = path.extname(filepath);
 	switch (ext) {
 	case ".aac":
-		console.warn("[deprecated] " + path.basename(filepath) + " uses deprecated format. Use MP4(AAC) instead of AAC.");
+		if (logger) {
+			logger.warn("[deprecated] " + path.basename(filepath) + " uses deprecated format. Use MP4(AAC) instead of AAC.");
+		}
 		var d: number;
 		try {
 			d = aacDuration(filepath);
