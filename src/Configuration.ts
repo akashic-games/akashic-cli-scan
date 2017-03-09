@@ -31,7 +31,9 @@ export function _assertAssetTypeNoConflict(aid: string, filepath: string, expect
 
 export function _assertAssetFilenameValid(name: string): void {
 	if (!/^[a-zA-Z_$]{1}[0-9a-zA-Z_$]*$/.test(name))
-		throw new Error("Invalid Asset FileName. `" + name + "`");
+		throw new Error(
+			"`" + name + "` is not a valid file name for assets. " +
+			"it must be a valid JavaScript's identifier name. (Only alphabets, numbers, '_' and '$' are allowed.)");
 }
 
 export interface DurationInfo {
