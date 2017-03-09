@@ -430,8 +430,8 @@ describe("Configuration", function () {
 		var logger = new cmn.ConsoleLogger({ quiet: false, debugLogMethod: () => ++loggedCount });
 		var conf = new cnf.Configuration({ content: <any>{}, logger: logger, basepath: process.cwd() });
 		conf.scanAssetsAudio().then(() => {
-			// アセット追加のログが1つ + duration差のwarnが1つ
-			expect(loggedCount).toBe(2);
+			// アセット追加のログが1つ + duration差のwarnが1つ + AAC利用のwarnが1つ
+			expect(loggedCount).toBe(3);
 			done();
 		}, done.fail);
 	});
