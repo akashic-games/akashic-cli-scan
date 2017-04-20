@@ -84,6 +84,13 @@ export interface ScanNodeModulesParameterObject {
 	logger?: cmn.Logger;
 
 	/**
+	 * エントリポイントスクリプトの内容からスキャンするようにするか否か。
+	 * 省略された場合、偽。
+	 * 偽である場合、 `npm ls` して得られたモジュール名一覧からスキャンする。
+	 */
+	fromEntryPoint?: boolean;
+
+	/**
 	 * デバッグ用のNPMを受け取る。
 	 * 省略された場合、NPMを引き渡さない。
 	 */
@@ -93,6 +100,7 @@ export interface ScanNodeModulesParameterObject {
 export function _completeScanNodeModulesParameterObject(param: ScanNodeModulesParameterObject): void {
 	param.cwd = param.cwd || process.cwd();
 	param.logger = param.logger || new cmn.ConsoleLogger();
+	param.fromEntryPoint = param.fromEntryPoint || false;
 }
 
 export function promiseScanNodeModules(param: ScanNodeModulesParameterObject): Promise<void> {
@@ -108,7 +116,7 @@ export function promiseScanNodeModules(param: ScanNodeModulesParameterObject): P
 				debugNpm: param.debugNpm
 			});
 			return Promise.resolve()
-				.then(() => conf.scanGlobalScripts())
+				.then(() => (param.fromEntryPoint ? conf.scanGlobalScriptsFromEntryPoint() : conf.scanGlobalScripts()))
 				.then(() => cmn.ConfigurationFile.write(conf.getContent(), "./game.json", param.logger))
 				.then(() => param.logger.info("Done!"));
 		})

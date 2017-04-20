@@ -968,7 +968,7 @@ describe("Configuration", function () {
 		}, done.fail);
 	});
 
-	it("scan globalScripts field based on node_modules/, differenced version in devDependency package", function (done) {
+	it("scan globalScripts field based on node_modules/, multiple versions in depdencdencies and devDependencies", function (done) {
 		var mockFsContent: any = {
 			"node_modules": {
 				"dummy": {
@@ -1092,9 +1092,120 @@ describe("Configuration", function () {
 				expect(globalScripts.length).toBe(expectedPaths.length);
 				expectedPaths.forEach((expectedPath) => {
 					expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
+				});
+				done();
+			}, done.fail);
+		}, done.fail);
+	});
+
+	it("scans globalScripts form the entry point script", function (done) {
+		var mockFsContent: any = {
+			"script": {
+				"main.js": [
+					"require('dummy2/sub');",
+					"require('./subdir/anAsset');"
+				].join("\n"),
+				"subdir": {
+					"anAsset.js": [
+						"require('dummyChild');"
+					].join("\n")
+				}
+			},
+			"node_modules": {
+				"dummy": {
+					"package.json": JSON.stringify({
+						name: "dummy",
+						version: "0.0.0",
+						main: "main.js",
+						dependencies: { "dummyChild": "1.0.0" }
+					}),
+					"main.js": [
+						"require('./foo');",
+						"require('dummyChild');",
+					].join("\n"),
+					"foo.js": "module.exports = 1;",
+					"node_modules": {
+						"dummyChild": {
+							"package.json": JSON.stringify({
+								name: "dummyChild",
+								version: "1.0.0",
+								main: "index.js",
+							}),
+							"index.js": "module.exports = 'dummyChild';"
+						}
+					}
+				},
+				"dummy2": {
+					"index.js": "require('./sub')",
+					"sub.js": "",
+				},
+				"devDummy": {
+					"package.json": JSON.stringify({
+						name: "devDummy",
+						version: "0.0.0",
+						main: "main.js",
+						dependencies: { "dummyChild": "2.0.0" }
+					}),
+					"main.js": [
+						"require('./foo');",
+						"require('dummyChild');",
+					].join("\n"),
+					"foo.js": "module.exports = 1;",
+					"node_modules": {
+					}
+				},
+				"dummyChild": {
+					"package.json": JSON.stringify({
+						name: "dummyChild",
+						version: "2.0.0",
+						main: "main.js",
+					}),
+					"main.js": "module.exports = 'dummyChild';"
+				}
+			}
+		};
+		mockfs(mockFsContent);
+
+		var conf = new cnf.Configuration({
+			content: <any>{
+				main: "./script/main.js",
+				assets: {
+					main: {
+						type: "script",
+						path: "script/main.js",
+						global: true
+					},
+					anAsset: {
+						type: "script",
+						path: "script/subdir/anAsset.js",
+						global: true
+					}
+				}
+			},
+			logger: nullLogger,
+			basepath: process.cwd(),
+			debugNpm: new MockPromisedNpm({
+				expectDependencies: {
+					"dummy": {
+						dependencies: { "dummyChild": {} }
+					},
+					"dummy2": {}
+				}
+			})
+		});
+
+		conf.scanGlobalScriptsFromEntryPoint().then(() => {
+			var globalScripts = conf.getContent().globalScripts;
+			var expectedPaths = [
+				"node_modules/dummyChild/package.json",
+				"node_modules/dummyChild/main.js",
+				"node_modules/dummy2/sub.js"
+			];
+			expect(globalScripts.length).toBe(expectedPaths.length);
+			expectedPaths.forEach((expectedPath) => {
+				expect(expectedPath + " is at " + globalScripts.indexOf(expectedPath)).not.toBe(expectedPath + " is at -1");
 			});
 			done();
-			}, done.fail);
 		}, done.fail);
 	});
 
