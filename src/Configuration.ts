@@ -208,6 +208,15 @@ export class Configuration extends cmn.Configuration {
 			});
 	}
 
+	scanGlobalScriptsFromEntryPoint(): Promise<void> {
+		var entryPointPath = this._content.main || ("./" + path.join(this._basepath, this._content.assets["mainScene"].path));
+		return Promise.resolve()
+			.then(() => cmn.NodeModules.listModuleFiles(this._basepath, entryPointPath))
+			.then((filePaths: string[]) => {
+				this._content.globalScripts = filePaths;
+			});
+	}
+
 	vacuumXXX(
 		dir: string,
 		type: string,
