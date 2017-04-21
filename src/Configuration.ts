@@ -202,7 +202,7 @@ export class Configuration extends cmn.Configuration {
 	scanGlobalScripts(): Promise<void> {
 		return Promise.resolve()
 			.then(() => this._fetchDependencyPackageNames())
-			.then((dependencyNames) => cmn.NodeModules.listModuleFiles(this._basepath, dependencyNames))
+			.then((dependencyNames) => cmn.NodeModules.listModuleFiles(this._basepath, dependencyNames, this._logger))
 			.then((filePaths: string[]) => {
 				this._content.globalScripts = filePaths;
 			});
