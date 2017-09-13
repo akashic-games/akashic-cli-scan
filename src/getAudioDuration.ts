@@ -9,9 +9,6 @@ export function getAudioDuration(filepath: string, logger?: cmn.Logger): Promise
 	var ext = path.extname(filepath);
 	switch (ext) {
 	case ".aac":
-		if (logger) {
-			logger.warn("[deprecated] " + path.basename(filepath) + " uses deprecated format. Use MP4(AAC) instead of AAC.");
-		}
 		var d: number;
 		try {
 			d = aacDuration(filepath);
@@ -30,6 +27,9 @@ export function getAudioDuration(filepath: string, logger?: cmn.Logger): Promise
 			});
 		});
 	case ".mp4":
+		if (logger) {
+			logger.warn("[deprecated] " + path.basename(filepath) + " uses deprecated format. Use AAC instead of MP4(AAC).");
+		}
 		var n: number;
 		try {
 			var data = fs.readFileSync(filepath);
