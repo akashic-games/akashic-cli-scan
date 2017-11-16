@@ -202,18 +202,47 @@ export class Configuration extends cmn.Configuration {
 	scanGlobalScripts(): Promise<void> {
 		return Promise.resolve()
 			.then(() => this._fetchDependencyPackageNames())
-			.then((dependencyNames) => cmn.NodeModules.listModuleFiles(this._basepath, dependencyNames, this._logger))
+			.then((dependencyNames) => cmn.NodeModules.listScriptFiles(this._basepath, dependencyNames, this._logger))
 			.then((filePaths: string[]) => {
-				this._content.globalScripts = filePaths;
+				this._content.globalScripts = filePaths ? filePaths : [];
+				return filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
+			});
+	}
+
+	scanModuleMainScripts(filePaths: string[]): Promise<void> {
+		return Promise.resolve()
+			.then(() => cmn.NodeModules.listPackageJsonsFromScriptsPath(this._basepath, filePaths))
+			.then(packageJsonFiles => {
+				var moduleMainScripts: cmn.ModuleMainScripts = {};
+				for (var i = 0; i < packageJsonFiles.length; i++) {
+					var packageJsonFile = packageJsonFiles[i];
+					var packageJsonData = fs.readFileSync(packageJsonFile, "utf-8");
+					var mainScript: string;
+					var moduleName: string;
+					try {
+						var d = JSON.parse(packageJsonData);
+						mainScript = path.join(path.dirname(packageJsonFile), d.main);
+						moduleName = d.name;
+					} catch (e) {
+						// do nothing
+					}
+					if (moduleName && mainScript) {
+						moduleMainScripts[moduleName] = cmn.Util.makeUnixPath(mainScript);
+					} else {
+						return Promise.reject(new Error("Invalid package.json format"));
+					}
+				}
+				this._content.moduleMainScripts = moduleMainScripts;
 			});
 	}
 
 	scanGlobalScriptsFromEntryPoint(): Promise<void> {
 		var entryPointPath = this._content.main || ("./" + path.join(this._basepath, this._content.assets["mainScene"].path));
 		return Promise.resolve()
-			.then(() => cmn.NodeModules.listModuleFiles(this._basepath, entryPointPath))
+			.then(() => cmn.NodeModules.listScriptFiles(this._basepath, entryPointPath, this._logger))
 			.then((filePaths: string[]) => {
-				this._content.globalScripts = filePaths;
+				this._content.globalScripts = filePaths ? filePaths : [];
+				return filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
 			});
 	}
 

@@ -117,17 +117,20 @@ describe("scan", function () {
 				expect(!!err).toBe(false);
 				var gamejson = JSON.parse(fs.readFileSync("./game.json").toString());
 				var globalScripts = gamejson.globalScripts;
-				expect(globalScripts.length).toBe(6);
+				var moduleMainScripts = gamejson.moduleMainScripts;
+				expect(globalScripts.length).toBe(5);
 				var expectedPaths = [
 					"node_modules/dummy/main.js",
 					"node_modules/dummy/foo.js",
-					"node_modules/dummy/package.json",
 					"node_modules/dummy/node_modules/dummyChild/index.js",
 					"node_modules/dummy2/index.js",
 					"node_modules/dummy2/sub.js"
 				];
 				expectedPaths.forEach((expectedPath) => {
 					expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
+				});
+				expect(moduleMainScripts).toEqual({
+					"dummy": "node_modules/dummy/main.js"
 				});
 				done();
 			});
