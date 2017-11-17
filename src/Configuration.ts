@@ -212,26 +212,8 @@ export class Configuration extends cmn.Configuration {
 	scanModuleMainScripts(filePaths: string[]): Promise<void> {
 		return Promise.resolve()
 			.then(() => cmn.NodeModules.listPackageJsonsFromScriptsPath(this._basepath, filePaths))
-			.then(packageJsonFiles => {
-				var moduleMainScripts: cmn.ModuleMainScripts = {};
-				for (var i = 0; i < packageJsonFiles.length; i++) {
-					var packageJsonFile = packageJsonFiles[i];
-					var packageJsonData = fs.readFileSync(packageJsonFile, "utf-8");
-					var mainScript: string;
-					var moduleName: string;
-					try {
-						var d = JSON.parse(packageJsonData);
-						mainScript = path.join(path.dirname(packageJsonFile), d.main);
-						moduleName = d.name;
-					} catch (e) {
-						// do nothing
-					}
-					if (moduleName && mainScript) {
-						moduleMainScripts[moduleName] = cmn.Util.makeUnixPath(mainScript);
-					} else {
-						return Promise.reject(new Error("Invalid package.json format"));
-					}
-				}
+			.then((packageJsonFiles) => cmn.NodeModules.listModuleMainScripts(packageJsonFiles))
+			.then((moduleMainScripts) => {
 				this._content.moduleMainScripts = moduleMainScripts;
 			});
 	}

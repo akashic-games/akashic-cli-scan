@@ -1142,7 +1142,7 @@ describe("Configuration", function () {
 			})
 		});
 
-		conf.scanGlobalScripts().then(done.fail, (e: any) => {
+		conf.scanGlobalScripts().then((e: any) => {
 			var globalScripts = conf.getContent().globalScripts;
 			var moduleMainScripts = conf.getContent().moduleMainScripts;
 			var expectedPaths = [
@@ -1153,9 +1153,9 @@ describe("Configuration", function () {
 			expectedPaths.forEach((expectedPath) => {
 				expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
 			});
-			expect(moduleMainScripts).toBeUndefined();
+			expect(moduleMainScripts).toEqual({});
 			done();
-		});
+		}, done.fail);
 	});
 
 	it("scan all moduleMainScripts", function (done) {
