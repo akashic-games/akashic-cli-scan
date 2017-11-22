@@ -214,6 +214,9 @@ export class Configuration extends cmn.Configuration {
 			.then(() => cmn.NodeModules.listPackageJsonsFromScriptsPath(this._basepath, filePaths))
 			.then((packageJsonFiles) => cmn.NodeModules.listModuleMainScripts(packageJsonFiles))
 			.then((moduleMainScripts) => {
+				if (! this._content.moduleMainScripts) {
+					this._logger.warn("`moduleMainScripts` doesn't existed in game.json. Please use akashic-engine@>=2.0.1, >=1.11.2");
+				}
 				this._content.moduleMainScripts = moduleMainScripts;
 			});
 	}

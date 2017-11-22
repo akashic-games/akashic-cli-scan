@@ -1363,6 +1363,111 @@ describe("Configuration", function () {
 		}, done.fail);
 	});
 
+	it("doesn't output warning message when moduleMainScript exist in game.json", function (done) {
+		var gamejson: any = {
+			assets: {
+			},
+			globalScripts: [
+				"node_modules/dummy/main.js"
+			],
+			moduleMainScripts: {
+				"dummy": "node_modules/dummy/main.js"
+			}
+		};
+
+		var mockFsContent: any = {
+			"game.json": JSON.stringify(gamejson),
+			"node_modules": {
+				"dummy": {
+					"package.json": JSON.stringify({
+						name: "dummy",
+						version: "0.0.0",
+						main: "main.js"
+					}),
+					"main.js": [
+						"module.exports = 1;"
+					].join("\n")
+				}
+			}
+		};
+		mockfs(mockFsContent);
+
+		var warnLogs: string[] = [];
+		class Logger extends cmn.ConsoleLogger {
+			warn(message: any) {
+				warnLogs.push(message);
+			}
+		}
+		var logger = new Logger();
+
+		var conf = new cnf.Configuration({
+			content: gamejson,
+			logger,
+			basepath: process.cwd(),
+			debugNpm: new MockPromisedNpm({
+				expectDependencies: {
+					"dummy": {}
+				}
+			})
+		});
+		conf.scanGlobalScripts().then((e: any) => {
+			expect(warnLogs.length).toBe(0);
+			done();
+		}, done.fail);
+	});
+
+	it("output warning message when moduleMainScript doesn't existed in game.json", function (done) {
+		var gamejson: any = {
+			assets: {
+			},
+			globalScripts: [
+				"node_modules/dummy/main.js",
+				"node_modules/dummy/package.json"
+			]
+		};
+		var mockFsContent: any = {
+			"game.json": JSON.stringify(gamejson),
+			"node_modules": {
+				"dummy": {
+					"package.json": JSON.stringify({
+						name: "dummy",
+						version: "0.0.0",
+						main: "main.js"
+					}),
+					"main.js": [
+						"module.exports = 1;"
+					].join("\n")
+				}
+			}
+		};
+		mockfs(mockFsContent);
+
+		var warnLogs: string[] = [];
+		class Logger extends cmn.ConsoleLogger {
+			warn(message: any) {
+				warnLogs.push(message);
+			}
+		}
+		var logger = new Logger();
+
+		var conf = new cnf.Configuration({
+			content: <any>{},
+			logger,
+			basepath: process.cwd(),
+			debugNpm: new MockPromisedNpm({
+				expectDependencies: {
+					"dummy": {}
+				}
+			})
+		});
+
+		conf.scanGlobalScripts().then((e: any) => {
+			expect(warnLogs.length).toBe(1);
+			expect(warnLogs[0]).toBe("`moduleMainScripts` doesn't existed in game.json. Please use akashic-engine@>=2.0.1, >=1.11.2");
+			done();
+		}, done.fail);
+	});
+
 	it("regression: scan asset with zero audio assets", function(done) {
 		var gamejson: any = {
 			assets: {
