@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.2.0
+* `globalScripts` のスキャン時に `moduleMainScript` を追加するように
+
 ## 0.1.3
 * 仕様にそぐわない警告メッセージを削除
 

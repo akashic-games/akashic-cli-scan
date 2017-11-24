@@ -202,18 +202,38 @@ export class Configuration extends cmn.Configuration {
 	scanGlobalScripts(): Promise<void> {
 		return Promise.resolve()
 			.then(() => this._fetchDependencyPackageNames())
-			.then((dependencyNames) => cmn.NodeModules.listModuleFiles(this._basepath, dependencyNames, this._logger))
+			.then((dependencyNames) => cmn.NodeModules.listScriptFiles(this._basepath, dependencyNames, this._logger))
 			.then((filePaths: string[]) => {
-				this._content.globalScripts = filePaths;
+				this._content.globalScripts = filePaths ? filePaths : [];
+				return filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
+			});
+	}
+
+	scanModuleMainScripts(filePaths: string[]): Promise<void> {
+		return Promise.resolve()
+			.then(() => cmn.NodeModules.listPackageJsonsFromScriptsPath(this._basepath, filePaths))
+			.then((packageJsonFiles) => cmn.NodeModules.listModuleMainScripts(packageJsonFiles))
+			.then((moduleMainScripts) => {
+				if (moduleMainScripts && Object.keys(moduleMainScripts).length > 0) {
+					if (! this._content.moduleMainScripts) {
+						this._logger.warn(
+							"Newly added the moduleMainScripts property to game.json." +
+							"This property, introduced by akashic-cli@>=X.Y.Z, is NOT supported by older versions of Akashic Engine." +
+							"Please ensure that you are using akashic-engine@>=2.0.1, >=1.11.2."
+						);
+					}
+					this._content.moduleMainScripts = Object.assign(this._content.moduleMainScripts || {}, moduleMainScripts);
+				}
 			});
 	}
 
 	scanGlobalScriptsFromEntryPoint(): Promise<void> {
 		var entryPointPath = this._content.main || ("./" + path.join(this._basepath, this._content.assets["mainScene"].path));
 		return Promise.resolve()
-			.then(() => cmn.NodeModules.listModuleFiles(this._basepath, entryPointPath))
+			.then(() => cmn.NodeModules.listScriptFiles(this._basepath, entryPointPath, this._logger))
 			.then((filePaths: string[]) => {
-				this._content.globalScripts = filePaths;
+				this._content.globalScripts = filePaths ? filePaths : [];
+				return filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
 			});
 	}
 

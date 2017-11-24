@@ -791,10 +791,10 @@ describe("Configuration", function () {
 
 		conf.scanGlobalScripts().then(() => {
 			var globalScripts = conf.getContent().globalScripts;
+			var moduleMainScripts = conf.getContent().moduleMainScripts;
 			var expectedPaths = [
 				"node_modules/dummy/main.js",
 				"node_modules/dummy/foo.js",
-				"node_modules/dummy/package.json",
 				"node_modules/dummy/node_modules/dummyChild/index.js",
 				"node_modules/dummy2/index.js",
 				"node_modules/dummy2/sub.js"
@@ -802,6 +802,9 @@ describe("Configuration", function () {
 			expect(globalScripts.length).toBe(expectedPaths.length);
 			expectedPaths.forEach((expectedPath) => {
 				expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
+			});
+			expect(moduleMainScripts).toEqual({
+				"dummy": "node_modules/dummy/main.js"
 			});
 			done();
 
@@ -851,10 +854,10 @@ describe("Configuration", function () {
 
 		conf.scanGlobalScripts().then(() => {
 			var globalScripts = conf.getContent().globalScripts;
+			var moduleMainScripts = conf.getContent().moduleMainScripts;
 			var expectedPaths = [
 				"node_modules/dummy/main.js",
 				"node_modules/dummy/foo.js",
-				"node_modules/dummy/package.json",
 				"node_modules/dummyChild/index.js",
 				"node_modules/dummy2/index.js",
 				"node_modules/dummy2/sub.js"
@@ -862,6 +865,9 @@ describe("Configuration", function () {
 			expect(globalScripts.length).toBe(expectedPaths.length);
 			expectedPaths.forEach((expectedPath) => {
 				expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
+			});
+			expect(moduleMainScripts).toEqual({
+				"dummy": "node_modules/dummy/main.js"
 			});
 			done();
 
@@ -923,14 +929,13 @@ describe("Configuration", function () {
 
 			conf.scanGlobalScripts().then(() => {
 				var globalScripts = conf.getContent().globalScripts;
+				var moduleMainScripts = conf.getContent().moduleMainScripts;
 				var expectedPaths = [
 					"node_modules/dummy/main.js",
 					"node_modules/dummy/foo.js",
-					"node_modules/dummy/package.json",
 					"node_modules/dummy/node_modules/dummyChild/index.js",
 					"node_modules/dummy2/index.js",
 					"node_modules/dummy2/sub.js",
-					"node_modules/@scope/scoped/package.json",
 					"node_modules/@scope/scoped/root.js",
 					"node_modules/@scope/scoped/lib/nonroot.js"
 				];
@@ -938,7 +943,9 @@ describe("Configuration", function () {
 				expectedPaths.forEach((expectedPath) => {
 					expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
 				});
-
+				expect(moduleMainScripts).toEqual({
+					"dummy": "node_modules/dummy/main.js"
+				});
 				done();
 			}, done.fail);
 	});
@@ -959,11 +966,13 @@ describe("Configuration", function () {
 		});
 		conf.scanGlobalScripts().then(() => {
 			var globalScripts = conf.getContent().globalScripts;
+			var moduleMainScripts = conf.getContent().moduleMainScripts;
 			expect(globalScripts.length).toBe(0);
 			var expectedPaths: string[] = [];
 			expectedPaths.forEach((expectedPath) => {
 				expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
 			});
+			expect(moduleMainScripts).toBeUndefined();
 			done();
 		}, done.fail);
 	});
@@ -1041,11 +1050,10 @@ describe("Configuration", function () {
 
 		conf.scanGlobalScripts().then(() => {
 			var globalScripts = conf.getContent().globalScripts;
+			var moduleMainScripts = conf.getContent().moduleMainScripts;
 			var expectedPaths = [
 				"node_modules/dummy/main.js",
 				"node_modules/dummy/foo.js",
-				"node_modules/dummy/package.json",
-				"node_modules/dummy/node_modules/dummyChild/package.json",
 				"node_modules/dummy/node_modules/dummyChild/index.js",
 				"node_modules/dummy2/index.js",
 				"node_modules/dummy2/sub.js"
@@ -1053,6 +1061,10 @@ describe("Configuration", function () {
 			expect(globalScripts.length).toBe(expectedPaths.length);
 			expectedPaths.forEach((expectedPath) => {
 				expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
+			});
+			expect(moduleMainScripts).toEqual({
+				"dummy": "node_modules/dummy/main.js",
+				"dummyChild": "node_modules/dummy/node_modules/dummyChild/index.js"
 			});
 
 			// nodeModules/dummyChild と modeModules/dummy/nodeModules/dummyChildを入れ替える
@@ -1080,11 +1092,10 @@ describe("Configuration", function () {
 
 			conf.scanGlobalScripts().then(() => {
 				var globalScripts = conf.getContent().globalScripts;
+				var moduleMainScripts = conf.getContent().moduleMainScripts;
 				var expectedPaths = [
 					"node_modules/dummy/main.js",
 					"node_modules/dummy/foo.js",
-					"node_modules/dummy/package.json",
-					"node_modules/dummyChild/package.json",
 					"node_modules/dummyChild/index.js",
 					"node_modules/dummy2/index.js",
 					"node_modules/dummy2/sub.js"
@@ -1093,12 +1104,152 @@ describe("Configuration", function () {
 				expectedPaths.forEach((expectedPath) => {
 					expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
 				});
+				expect(moduleMainScripts).toEqual({
+					"dummy": "node_modules/dummy/main.js",
+					"dummyChild": "node_modules/dummyChild/index.js"
+				});
 				done();
 			}, done.fail);
 		}, done.fail);
 	});
 
-	it("scans globalScripts form the entry point script", function (done) {
+	it("scan invalid package.json - no name", function (done) {
+		var mockFsContent: any = {
+			"node_modules": {
+				"invalidDummy": {
+					"package.json": JSON.stringify({
+						// no name
+						version: "0.0.0",
+						main: "main.js"
+					}),
+					"main.js": [
+						"require('./foo');"
+					].join("\n"),
+					"foo.js": "module.exports = 1;"
+				}
+			}
+		};
+		mockfs(mockFsContent);
+
+		var conf = new cnf.Configuration({
+			content: <any>{},
+			logger: nullLogger,
+			basepath: process.cwd(),
+			debugNpm: new MockPromisedNpm({
+				expectDependencies: {
+					"invalidDummy": {}
+				}
+			})
+		});
+
+		conf.scanGlobalScripts().then((e: any) => {
+			var globalScripts = conf.getContent().globalScripts;
+			var moduleMainScripts = conf.getContent().moduleMainScripts;
+			var expectedPaths = [
+				"node_modules/invalidDummy/main.js",
+				"node_modules/invalidDummy/foo.js"
+			];
+			expect(globalScripts.length).toBe(expectedPaths.length);
+			expectedPaths.forEach((expectedPath) => {
+				expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
+			});
+			expect(moduleMainScripts).toBeUndefined();
+			done();
+		}, done.fail);
+	});
+
+	it("scan all moduleMainScripts", function (done) {
+		var mockFsContent: any = {
+			"node_modules": {
+				"dummy": {
+					"package.json": JSON.stringify({
+						name: "dummy",
+						version: "0.0.0",
+						main: "main.js",
+						dependencies: { "dummyChild": "*" }
+					}),
+					"main.js": [
+						"require('./foo');",
+						"require('dummyChild');",
+					].join("\n"),
+					"foo.js": "module.exports = 1;",
+					"node_modules": {
+						"dummyChild": {
+							"package.json": JSON.stringify({
+								name: "dummyChild",
+								version: "0.0.0",
+								main: "index.js",
+								dependencies: { "dummy2": "*" }
+							}),
+							"index.js": "module.exports = 'dummyChild';"
+						}
+					}
+				},
+				"dummy2": {
+					"package.json": JSON.stringify({
+						name: "dummy2",
+						version: "0.0.0",
+						main: "index.js",
+						dependencies: { "@scope/scoped": "*" }
+					}),
+					"index.js": "require('./sub')",
+					"sub.js": "",
+				},
+				".bin": {
+					"shouldBeIgnored.js": ""
+				},
+				"@scope": {
+					"scoped": {
+						"package.json": JSON.stringify({
+							name: "@scope/scoped",
+							version: "0.0.0",
+							main: "root.js",
+						}),
+						"root.js": "require('./lib/nonroot.js');",
+						"lib": {
+							"nonroot.js": "",
+						}
+					}
+				}
+			}
+		};
+		mockfs(mockFsContent);
+
+		var conf = new cnf.Configuration({
+			content: <any>{},
+			logger: nullLogger,
+			basepath: process.cwd(),
+			debugNpm: new MockPromisedNpm({
+				expectDependencies: { "dummy": {}, "dummy2": {}, "@scope/scoped": {} }
+			})});
+
+			conf.scanGlobalScripts().then(() => {
+				var globalScripts = conf.getContent().globalScripts;
+				var moduleMainScripts = conf.getContent().moduleMainScripts;
+				var expectedPaths = [
+					"node_modules/dummy/main.js",
+					"node_modules/dummy/foo.js",
+					"node_modules/dummy/node_modules/dummyChild/index.js",
+					"node_modules/dummy2/index.js",
+					"node_modules/dummy2/sub.js",
+					"node_modules/@scope/scoped/root.js",
+					"node_modules/@scope/scoped/lib/nonroot.js"
+				];
+				expect(globalScripts.length).toBe(expectedPaths.length);
+				expectedPaths.forEach((expectedPath) => {
+					expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
+				});
+				expect(moduleMainScripts).toEqual({
+					"dummy": "node_modules/dummy/main.js",
+					"dummyChild": "node_modules/dummy/node_modules/dummyChild/index.js",
+					"dummy2": "node_modules/dummy2/index.js",
+					"@scope/scoped": "node_modules/@scope/scoped/root.js"
+				});
+				done();
+			}, done.fail);
+	});
+
+	it("scans globalScripts from the entry point script", function (done) {
 		var mockFsContent: any = {
 			"script": {
 				"main.js": [
@@ -1196,8 +1347,8 @@ describe("Configuration", function () {
 
 		conf.scanGlobalScriptsFromEntryPoint().then(() => {
 			var globalScripts = conf.getContent().globalScripts;
+			var moduleMainScripts = conf.getContent().moduleMainScripts;
 			var expectedPaths = [
-				"node_modules/dummyChild/package.json",
 				"node_modules/dummyChild/main.js",
 				"node_modules/dummy2/sub.js"
 			];
@@ -1205,6 +1356,118 @@ describe("Configuration", function () {
 			expectedPaths.forEach((expectedPath) => {
 				expect(expectedPath + " is at " + globalScripts.indexOf(expectedPath)).not.toBe(expectedPath + " is at -1");
 			});
+			expect(moduleMainScripts).toEqual({
+				"dummyChild": "node_modules/dummyChild/main.js"
+			});
+			done();
+		}, done.fail);
+	});
+
+	it("doesn't output warning message when moduleMainScript exist in game.json", function (done) {
+		var gamejson: any = {
+			assets: {
+			},
+			globalScripts: [
+				"node_modules/dummy/main.js"
+			],
+			moduleMainScripts: {
+				"dummy": "node_modules/dummy/main.js"
+			}
+		};
+
+		var mockFsContent: any = {
+			"game.json": JSON.stringify(gamejson),
+			"node_modules": {
+				"dummy": {
+					"package.json": JSON.stringify({
+						name: "dummy",
+						version: "0.0.0",
+						main: "main.js"
+					}),
+					"main.js": [
+						"module.exports = 1;"
+					].join("\n")
+				}
+			}
+		};
+		mockfs(mockFsContent);
+
+		var warnLogs: string[] = [];
+		class Logger extends cmn.ConsoleLogger {
+			warn(message: any) {
+				warnLogs.push(message);
+			}
+		}
+		var logger = new Logger();
+
+		var conf = new cnf.Configuration({
+			content: gamejson,
+			logger,
+			basepath: process.cwd(),
+			debugNpm: new MockPromisedNpm({
+				expectDependencies: {
+					"dummy": {}
+				}
+			})
+		});
+		conf.scanGlobalScripts().then((e: any) => {
+			expect(warnLogs.length).toBe(0);
+			done();
+		}, done.fail);
+	});
+
+	it("output warning message when moduleMainScript doesn't existed in game.json", function (done) {
+		var gamejson: any = {
+			assets: {
+			},
+			globalScripts: [
+				"node_modules/dummy/main.js",
+				"node_modules/dummy/package.json"
+			]
+		};
+		var mockFsContent: any = {
+			"game.json": JSON.stringify(gamejson),
+			"node_modules": {
+				"dummy": {
+					"package.json": JSON.stringify({
+						name: "dummy",
+						version: "0.0.0",
+						main: "main.js"
+					}),
+					"main.js": [
+						"module.exports = 1;"
+					].join("\n")
+				}
+			}
+		};
+		mockfs(mockFsContent);
+
+		var warnLogs: string[] = [];
+		class Logger extends cmn.ConsoleLogger {
+			warn(message: any) {
+				warnLogs.push(message);
+			}
+		}
+		var logger = new Logger();
+
+		var conf = new cnf.Configuration({
+			content: <any>{},
+			logger,
+			basepath: process.cwd(),
+			debugNpm: new MockPromisedNpm({
+				expectDependencies: {
+					"dummy": {}
+				}
+			})
+		});
+
+		conf.scanGlobalScripts().then((e: any) => {
+			expect(warnLogs.length).toBe(1);
+			expect(warnLogs[0]).toBe(
+				"Newly added the moduleMainScripts property to game.json." +
+				"This property, introduced by akashic-cli@>=X.Y.Z, is NOT supported by older versions of Akashic Engine." +
+				"Please ensure that you are using akashic-engine@>=2.0.1, >=1.11.2."
+			);
 			done();
 		}, done.fail);
 	});
