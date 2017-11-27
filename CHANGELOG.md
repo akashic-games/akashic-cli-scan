@@ -1,6 +1,9 @@
 # CHANGELOG
 
 ## 0.2.0
+* `moduleMainScript` が存在しなかった場合の警告メッセージの対象エンジンバージョンが誤っていたのを修正
+
+## 0.2.0
 * `globalScripts` のスキャン時に `moduleMainScript` を追加するように
 
 ## 0.1.3

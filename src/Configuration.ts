@@ -218,8 +218,8 @@ export class Configuration extends cmn.Configuration {
 					if (! this._content.moduleMainScripts) {
 						this._logger.warn(
 							"Newly added the moduleMainScripts property to game.json." +
-							"This property, introduced by akashic-cli@>=X.Y.Z, is NOT supported by older versions of Akashic Engine." +
-							"Please ensure that you are using akashic-engine@>=2.0.1, >=1.11.2."
+							"This property, introduced by akashic-cli@>=1.12.2, is NOT supported by older versions of Akashic Engine." +
+							"Please ensure that you are using akashic-engine@>=2.0.2, >=1.12.7."
 						);
 					}
 					this._content.moduleMainScripts = Object.assign(this._content.moduleMainScripts || {}, moduleMainScripts);
