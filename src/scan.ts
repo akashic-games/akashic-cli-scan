@@ -23,7 +23,7 @@ export interface ScanAssetParameterObject {
 
 	/**
 	 * game.json の `moduleMainScript` を出力しないかどうか。
-	 * 省略された場合、 `true` 。
+	 * 省略された場合、 `false` 。
 	 */
 	disableModuleMain?: boolean;
 }
@@ -104,7 +104,7 @@ export interface ScanNodeModulesParameterObject {
 
 	/**
 	 * game.json の `moduleMainScript` を出力しないかどうか。
-	 * 省略された場合、 `true` 。
+	 * 省略された場合、 `false` 。
 	 */
 	disableModuleMain?: boolean;
 }
