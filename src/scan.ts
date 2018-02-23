@@ -20,6 +20,12 @@ export interface ScanAssetParameterObject {
 	 * 省略された場合、akashic-cli-commons の `new ConsoleLogger()` 。
 	 */
 	logger?: cmn.Logger;
+
+	/**
+	 * game.json の `moduleMainScript` を出力しないかどうか。
+	 * 省略された場合、 `true` 。
+	 */
+	disableModuleMain?: boolean;
 }
 
 export function _completeScanAssetParameterObject(param: ScanAssetParameterObject): void {
@@ -34,7 +40,7 @@ export function promiseScanAsset(param: ScanAssetParameterObject): Promise<void>
 	return Promise.resolve()
 		.then(() => cmn.ConfigurationFile.read("./game.json", param.logger))
 		.then((content: cmn.GameConfiguration) => {
-			var conf = new Configuration({ content: content, logger: param.logger, basepath: "." });
+			var conf = new Configuration({ content: content, logger: param.logger, basepath: ".", disableModuleMain: param.disableModuleMain });
 			conf.vacuum();
 			return new Promise<void>((resolve, reject) => {
 				switch (param.target) {
@@ -95,6 +101,12 @@ export interface ScanNodeModulesParameterObject {
 	 * 省略された場合、NPMを引き渡さない。
 	 */
 	debugNpm?: cmn.PromisedNpm;
+
+	/**
+	 * game.json の `moduleMainScript` を出力しないかどうか。
+	 * 省略された場合、 `true` 。
+	 */
+	disableModuleMain?: boolean;
 }
 
 export function _completeScanNodeModulesParameterObject(param: ScanNodeModulesParameterObject): void {
@@ -113,7 +125,8 @@ export function promiseScanNodeModules(param: ScanNodeModulesParameterObject): P
 				content: content,
 				logger: param.logger,
 				basepath: "." ,
-				debugNpm: param.debugNpm
+				debugNpm: param.debugNpm,
+				disableModuleMain: !!param.disableModuleMain
 			});
 			return Promise.resolve()
 				.then(() => (param.fromEntryPoint ? conf.scanGlobalScriptsFromEntryPoint() : conf.scanGlobalScripts()))
