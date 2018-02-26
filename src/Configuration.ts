@@ -211,11 +211,7 @@ export class Configuration extends cmn.Configuration {
 			})
 			.then((filePaths: string[]) => {
 				this._content.globalScripts = filePaths ? filePaths : [];
-				if (!this._noOmitPackagejson && filePaths && filePaths.length !== 0) {
-					return this.scanModuleMainScripts(filePaths);
-				} else {
-					delete this._content.moduleMainScripts;
-				}
+				return filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
 			});
 	}
 
@@ -246,11 +242,7 @@ export class Configuration extends cmn.Configuration {
 			})
 			.then((filePaths: string[]) => {
 				this._content.globalScripts = filePaths ? filePaths : [];
-				if (!this._noOmitPackagejson && filePaths && filePaths.length !== 0) {
-					return this.scanModuleMainScripts(filePaths);
-				} else {
-					delete this._content.moduleMainScripts;
-				}
+				return filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
 			});
 	}
 

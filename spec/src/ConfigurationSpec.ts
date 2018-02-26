@@ -1335,7 +1335,12 @@ describe("Configuration", function () {
 				expectedPaths.forEach((expectedPath) => {
 					expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
 				});
-				expect(moduleMainScripts).toBeUndefined();
+				expect(moduleMainScripts).toEqual({
+					"dummy": "node_modules/dummy/main.js",
+					"dummyChild": "node_modules/dummy/node_modules/dummyChild/index.js",
+					"dummy2": "node_modules/dummy2/index.js",
+					"@scope/scoped": "node_modules/@scope/scoped/root.js"
+				});
 				done();
 			}, done.fail);
 	});
