@@ -25,7 +25,7 @@ export interface ScanAssetParameterObject {
 	 * game.json の `moduleMainScript` を出力しないかどうか。
 	 * 省略された場合、 `false` 。
 	 */
-	disableModuleMain?: boolean;
+	noOmitPackagejson?: boolean;
 }
 
 export function _completeScanAssetParameterObject(param: ScanAssetParameterObject): void {
@@ -40,7 +40,7 @@ export function promiseScanAsset(param: ScanAssetParameterObject): Promise<void>
 	return Promise.resolve()
 		.then(() => cmn.ConfigurationFile.read("./game.json", param.logger))
 		.then((content: cmn.GameConfiguration) => {
-			var conf = new Configuration({ content: content, logger: param.logger, basepath: ".", disableModuleMain: param.disableModuleMain });
+			var conf = new Configuration({ content: content, logger: param.logger, basepath: ".", noOmitPackagejson: param.noOmitPackagejson });
 			conf.vacuum();
 			return new Promise<void>((resolve, reject) => {
 				switch (param.target) {
@@ -106,7 +106,7 @@ export interface ScanNodeModulesParameterObject {
 	 * game.json の `moduleMainScript` を出力しないかどうか。
 	 * 省略された場合、 `false` 。
 	 */
-	disableModuleMain?: boolean;
+	noOmitPackagejson?: boolean;
 }
 
 export function _completeScanNodeModulesParameterObject(param: ScanNodeModulesParameterObject): void {
@@ -126,7 +126,7 @@ export function promiseScanNodeModules(param: ScanNodeModulesParameterObject): P
 				logger: param.logger,
 				basepath: "." ,
 				debugNpm: param.debugNpm,
-				disableModuleMain: !!param.disableModuleMain
+				noOmitPackagejson: !!param.noOmitPackagejson
 			});
 			return Promise.resolve()
 				.then(() => (param.fromEntryPoint ? conf.scanGlobalScriptsFromEntryPoint() : conf.scanGlobalScripts()))

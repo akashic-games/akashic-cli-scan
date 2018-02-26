@@ -1249,7 +1249,7 @@ describe("Configuration", function () {
 			}, done.fail);
 	});
 
-	it("scan globalScripts: given --disable-module-main property", function (done) {
+	it("scan globalScripts: given --no-omit-packagejson property", function (done) {
 		var mockFsContent: any = {
 			"node_modules": {
 				"dummy": {
@@ -1310,7 +1310,7 @@ describe("Configuration", function () {
 			content: <any>{},
 			logger: nullLogger,
 			basepath: process.cwd(),
-			disableModuleMain: true,
+			noOmitPackagejson: true,
 			debugNpm: new MockPromisedNpm({
 				expectDependencies: { "dummy": {}, "dummy2": {}, "@scope/scoped": {} }
 			})});

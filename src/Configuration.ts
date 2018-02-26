@@ -46,19 +46,19 @@ export type DurationMap = { [basename: string]: DurationInfo };
 
 export interface ConfigurationParameterObject extends cmn.ConfigurationParameterObject {
 	basepath: string;
-	disableModuleMain?: boolean;
+	noOmitPackagejson?: boolean;
 	debugNpm?: cmn.PromisedNpm;
 }
 
 export class Configuration extends cmn.Configuration {
 	_basepath: string;
-	_disableModuleMain: boolean;
+	_noOmitPackagejson: boolean;
 	_npm: cmn.PromisedNpm;
 
 	constructor(param: ConfigurationParameterObject) {
 		super(param);
 		this._basepath = param.basepath;
-		this._disableModuleMain = param.disableModuleMain;
+		this._noOmitPackagejson = param.noOmitPackagejson;
 		this._npm = param.debugNpm ? param.debugNpm : new cmn.PromisedNpm({ logger: param.logger });
 	}
 
@@ -206,12 +206,16 @@ export class Configuration extends cmn.Configuration {
 		return Promise.resolve()
 			.then(() => this._fetchDependencyPackageNames())
 			.then((dependencyNames) => {
-				const listFiles = this._disableModuleMain ? cmn.NodeModules.listModuleFiles : cmn.NodeModules.listScriptFiles;
+				const listFiles = this._noOmitPackagejson ? cmn.NodeModules.listModuleFiles : cmn.NodeModules.listScriptFiles;
 				return listFiles(this._basepath, dependencyNames, this._logger);
 			})
 			.then((filePaths: string[]) => {
 				this._content.globalScripts = filePaths ? filePaths : [];
-				return !this._disableModuleMain && filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
+				if (!this._noOmitPackagejson && filePaths && filePaths.length !== 0) {
+					return this.scanModuleMainScripts(filePaths);
+				} else {
+					delete this._content.moduleMainScripts;
+				}
 			});
 	}
 
@@ -237,12 +241,16 @@ export class Configuration extends cmn.Configuration {
 		var entryPointPath = this._content.main || ("./" + path.join(this._basepath, this._content.assets["mainScene"].path));
 		return Promise.resolve()
 			.then(() => {
-				const listFiles = this._disableModuleMain ? cmn.NodeModules.listModuleFiles : cmn.NodeModules.listScriptFiles;
+				const listFiles = this._noOmitPackagejson ? cmn.NodeModules.listModuleFiles : cmn.NodeModules.listScriptFiles;
 				return listFiles(this._basepath, entryPointPath, this._logger);
 			})
 			.then((filePaths: string[]) => {
 				this._content.globalScripts = filePaths ? filePaths : [];
-				return !this._disableModuleMain && filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
+				if (!this._noOmitPackagejson && filePaths && filePaths.length !== 0) {
+					return this.scanModuleMainScripts(filePaths);
+				} else {
+					delete this._content.moduleMainScripts;
+				}
 			});
 	}
 

@@ -40,10 +40,10 @@ commander
 	.option("-C, --cwd <dir>", "The directory incluedes game.json")
 	.option("-e, --from-entry-point", "Scan from the entrypoint instead of `npm ls`")
 	.option("-q, --quiet", "Suppress output")
-	.option("--disable-module-main", "Disable `moduleMainScripts` property of game.json")
+	.option("--no-omit-packagejson", "Disable `moduleMainScripts` property of game.json")
 	.action((opts: any = {}) => {
 		var logger = new ConsoleLogger({ quiet: opts.quiet });
-		promiseScanNodeModules({ cwd: opts.cwd, logger: logger, fromEntryPoint: opts.fromEntryPoint, disableModuleMain: opts.disableModuleMain })
+		promiseScanNodeModules({ cwd: opts.cwd, logger: logger, fromEntryPoint: opts.fromEntryPoint, noOmitPackagejson: !opts.omitPackagejson })
 			.catch((err: any) => {
 				logger.error(err);
 				process.exit(1);
