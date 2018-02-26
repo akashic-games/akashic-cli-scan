@@ -22,7 +22,7 @@ export interface ScanAssetParameterObject {
 	logger?: cmn.Logger;
 
 	/**
-	 * game.json の `moduleMainScript` を出力しないかどうか。
+	 * `globalScripts` に外部モジュールの package.json のパスを含めるかどうか。
 	 * 省略された場合、 `false` 。
 	 */
 	noOmitPackagejson?: boolean;
@@ -103,7 +103,7 @@ export interface ScanNodeModulesParameterObject {
 	debugNpm?: cmn.PromisedNpm;
 
 	/**
-	 * game.json の `moduleMainScript` を出力しないかどうか。
+	 * `globalScripts` に外部モジュールの package.json のパスを含めるかどうか。
 	 * 省略された場合、 `false` 。
 	 */
 	noOmitPackagejson?: boolean;
