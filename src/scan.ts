@@ -20,6 +20,12 @@ export interface ScanAssetParameterObject {
 	 * 省略された場合、akashic-cli-commons の `new ConsoleLogger()` 。
 	 */
 	logger?: cmn.Logger;
+
+	/**
+	 * `globalScripts` に外部モジュールの package.json のパスを含めるかどうか。
+	 * 省略された場合、 `false` 。
+	 */
+	noOmitPackagejson?: boolean;
 }
 
 export function _completeScanAssetParameterObject(param: ScanAssetParameterObject): void {
@@ -34,7 +40,7 @@ export function promiseScanAsset(param: ScanAssetParameterObject): Promise<void>
 	return Promise.resolve()
 		.then(() => cmn.ConfigurationFile.read("./game.json", param.logger))
 		.then((content: cmn.GameConfiguration) => {
-			var conf = new Configuration({ content: content, logger: param.logger, basepath: "." });
+			var conf = new Configuration({ content: content, logger: param.logger, basepath: ".", noOmitPackagejson: param.noOmitPackagejson });
 			conf.vacuum();
 			return new Promise<void>((resolve, reject) => {
 				switch (param.target) {
@@ -95,6 +101,12 @@ export interface ScanNodeModulesParameterObject {
 	 * 省略された場合、NPMを引き渡さない。
 	 */
 	debugNpm?: cmn.PromisedNpm;
+
+	/**
+	 * `globalScripts` に外部モジュールの package.json のパスを含めるかどうか。
+	 * 省略された場合、 `false` 。
+	 */
+	noOmitPackagejson?: boolean;
 }
 
 export function _completeScanNodeModulesParameterObject(param: ScanNodeModulesParameterObject): void {
@@ -113,7 +125,8 @@ export function promiseScanNodeModules(param: ScanNodeModulesParameterObject): P
 				content: content,
 				logger: param.logger,
 				basepath: "." ,
-				debugNpm: param.debugNpm
+				debugNpm: param.debugNpm,
+				noOmitPackagejson: !!param.noOmitPackagejson
 			});
 			return Promise.resolve()
 				.then(() => (param.fromEntryPoint ? conf.scanGlobalScriptsFromEntryPoint() : conf.scanGlobalScripts()))

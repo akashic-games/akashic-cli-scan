@@ -46,16 +46,19 @@ export type DurationMap = { [basename: string]: DurationInfo };
 
 export interface ConfigurationParameterObject extends cmn.ConfigurationParameterObject {
 	basepath: string;
+	noOmitPackagejson?: boolean;
 	debugNpm?: cmn.PromisedNpm;
 }
 
 export class Configuration extends cmn.Configuration {
 	_basepath: string;
+	_noOmitPackagejson: boolean;
 	_npm: cmn.PromisedNpm;
 
 	constructor(param: ConfigurationParameterObject) {
 		super(param);
 		this._basepath = param.basepath;
+		this._noOmitPackagejson = param.noOmitPackagejson;
 		this._npm = param.debugNpm ? param.debugNpm : new cmn.PromisedNpm({ logger: param.logger });
 	}
 
@@ -202,7 +205,10 @@ export class Configuration extends cmn.Configuration {
 	scanGlobalScripts(): Promise<void> {
 		return Promise.resolve()
 			.then(() => this._fetchDependencyPackageNames())
-			.then((dependencyNames) => cmn.NodeModules.listScriptFiles(this._basepath, dependencyNames, this._logger))
+			.then((dependencyNames) => {
+				const listFiles = this._noOmitPackagejson ? cmn.NodeModules.listModuleFiles : cmn.NodeModules.listScriptFiles;
+				return listFiles(this._basepath, dependencyNames, this._logger);
+			})
 			.then((filePaths: string[]) => {
 				this._content.globalScripts = filePaths ? filePaths : [];
 				return filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();
@@ -230,7 +236,10 @@ export class Configuration extends cmn.Configuration {
 	scanGlobalScriptsFromEntryPoint(): Promise<void> {
 		var entryPointPath = this._content.main || ("./" + path.join(this._basepath, this._content.assets["mainScene"].path));
 		return Promise.resolve()
-			.then(() => cmn.NodeModules.listScriptFiles(this._basepath, entryPointPath, this._logger))
+			.then(() => {
+				const listFiles = this._noOmitPackagejson ? cmn.NodeModules.listModuleFiles : cmn.NodeModules.listScriptFiles;
+				return listFiles(this._basepath, entryPointPath, this._logger);
+			})
 			.then((filePaths: string[]) => {
 				this._content.globalScripts = filePaths ? filePaths : [];
 				return filePaths && filePaths.length !== 0 ? this.scanModuleMainScripts(filePaths) : Promise.resolve();

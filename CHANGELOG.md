@@ -1,6 +1,9 @@
 # CHANGELOG
 
-## 0.2.0
+## 0.2.2
+* `globalScripts` に `--no-omit-packagejson` を追加 (#15)
+
+## 0.2.1
 * `moduleMainScript` が存在しなかった場合の警告メッセージの対象エンジンバージョンが誤っていたのを修正
 
 ## 0.2.0

@@ -1249,6 +1249,102 @@ describe("Configuration", function () {
 			}, done.fail);
 	});
 
+	it("scan globalScripts: given --no-omit-packagejson property", function (done) {
+		var mockFsContent: any = {
+			"node_modules": {
+				"dummy": {
+					"package.json": JSON.stringify({
+						name: "dummy",
+						version: "0.0.0",
+						main: "main.js",
+						dependencies: { "dummyChild": "*" }
+					}),
+					"main.js": [
+						"require('./foo');",
+						"require('dummyChild');",
+					].join("\n"),
+					"foo.js": "module.exports = 1;",
+					"node_modules": {
+						"dummyChild": {
+							"package.json": JSON.stringify({
+								name: "dummyChild",
+								version: "0.0.0",
+								main: "index.js",
+								dependencies: { "dummy2": "*" }
+							}),
+							"index.js": "module.exports = 'dummyChild';"
+						}
+					}
+				},
+				"dummy2": {
+					"package.json": JSON.stringify({
+						name: "dummy2",
+						version: "0.0.0",
+						main: "index.js",
+						dependencies: { "@scope/scoped": "*" }
+					}),
+					"index.js": "require('./sub')",
+					"sub.js": "",
+				},
+				".bin": {
+					"shouldBeIgnored.js": ""
+				},
+				"@scope": {
+					"scoped": {
+						"package.json": JSON.stringify({
+							name: "@scope/scoped",
+							version: "0.0.0",
+							main: "root.js",
+						}),
+						"root.js": "require('./lib/nonroot.js');",
+						"lib": {
+							"nonroot.js": "",
+						}
+					}
+				}
+			}
+		};
+		mockfs(mockFsContent);
+
+		var conf = new cnf.Configuration({
+			content: <any>{},
+			logger: nullLogger,
+			basepath: process.cwd(),
+			noOmitPackagejson: true,
+			debugNpm: new MockPromisedNpm({
+				expectDependencies: { "dummy": {}, "dummy2": {}, "@scope/scoped": {} }
+			})});
+
+			conf.scanGlobalScripts().then(() => {
+				var globalScripts = conf.getContent().globalScripts;
+				var moduleMainScripts = conf.getContent().moduleMainScripts;
+				var expectedPaths = [
+					"node_modules/dummy/main.js",
+					"node_modules/dummy/foo.js",
+					"node_modules/dummy/node_modules/dummyChild/index.js",
+					"node_modules/dummy2/index.js",
+					"node_modules/dummy2/sub.js",
+					"node_modules/@scope/scoped/root.js",
+					"node_modules/@scope/scoped/lib/nonroot.js",
+					'node_modules/@scope/scoped/package.json',
+					'node_modules/dummy2/package.json',
+					'node_modules/dummy/package.json',
+					'node_modules/dummy/node_modules/dummyChild/package.json'
+				];
+				expect(globalScripts.length).toBe(expectedPaths.length);
+				expectedPaths.forEach((expectedPath) => {
+					expect(globalScripts.indexOf(expectedPath)).not.toBe(-1);
+				});
+				expect(moduleMainScripts).toEqual({
+					"dummy": "node_modules/dummy/main.js",
+					"dummyChild": "node_modules/dummy/node_modules/dummyChild/index.js",
+					"dummy2": "node_modules/dummy2/index.js",
+					"@scope/scoped": "node_modules/@scope/scoped/root.js"
+				});
+				done();
+			}, done.fail);
+	});
+
 	it("scans globalScripts from the entry point script", function (done) {
 		var mockFsContent: any = {
 			"script": {
