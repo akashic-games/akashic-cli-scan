@@ -28,6 +28,8 @@
     "@types/node": "6.0.46",
     "@types/jasmine": "~2.8.2",
     "@types/mock-fs": "~3.6.30",
+    "@types/image-size": "0.0.29",
+    "@types/musicmetadata": "^2.0.4",
     "shx": "~0.2.2",
     "jasmine": "~2.1.1",
     "jasmine-reporters": "~2.0.4",
@@ -43,8 +45,6 @@
   "typings": "lib/index.d.ts",
   "dependencies": {
     "@akashic/akashic-cli-commons": "~0.2.5",
-    "@types/image-size": "0.0.29",
-    "@types/musicmetadata": "^2.0.4",
     "aac-duration": "0.0.1",
     "commander": "^2.16.0",
     "fs-readdir-recursive": "1.0.0",
