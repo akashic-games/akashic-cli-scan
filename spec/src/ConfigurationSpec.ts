@@ -412,7 +412,7 @@ describe("Configuration", function () {
 			}
 		});
 		var conf = new cnf.Configuration({ content: gamejson, logger: nullLogger, basepath: "." });
-		conf.scanAssetsAudio().then(done.fail, (err: any) => {
+		conf.scanAssetsAudio().then((done.fail as () => void)).catch((err: any) => {
 			expect(err.message.indexOf("Conflicted Asset Type") >= 0).toBe(true);
 			done();
 		});
@@ -455,7 +455,7 @@ describe("Configuration", function () {
 			},
 		});
 		var conf = new cnf.Configuration({ content: gamejson, logger: nullLogger, basepath: process.cwd() });
-		conf.scanAssetsAudio().then(done.fail, (err: any) => {
+		conf.scanAssetsAudio().then((done.fail as () => void), (err: any) => {
 			expect(err).toEqual(new Error("not aac"));
 			done();
 		});
@@ -1570,6 +1570,8 @@ describe("Configuration", function () {
 
 	it("regression: scan asset with zero audio assets", function(done) {
 		var gamejson: any = {
+			width: 320,
+			height: 320,
 			assets: {
 				"dummyAudio": {
 					"type": "audio",
@@ -1592,6 +1594,8 @@ describe("Configuration", function () {
 		conf.scanAssets().then(() => {
 			conf.vacuum();
 			expect(conf.getContent()).toEqual({
+				width: 320,
+				height: 320,
 				assets:{
 					dummy: {
 						type: "image",

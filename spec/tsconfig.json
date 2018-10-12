@@ -15,8 +15,6 @@
   ],
   "files": [
     "../node_modules/typescript/lib/lib.es6.d.ts",
-    "../typings/index.d.ts",
-    "./typings/index.d.ts",
     "./src/helpers/MockPromisedNpm.ts",
     "./src/getAudioDurationSpec.ts",
     "./src/ConfigurationSpec.ts",

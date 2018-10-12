@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.2.3
+* TypeScript2系を利用
+
 ## 0.2.2
 * `globalScripts` に `--no-omit-packagejson` を追加 (#15)
 
