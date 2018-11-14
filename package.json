@@ -31,16 +31,16 @@
     "@types/image-size": "0.0.29",
     "@types/musicmetadata": "^2.0.4",
     "shx": "~0.2.2",
-    "jasmine": "~2.1.1",
+    "jasmine": "~3.3.0",
     "jasmine-reporters": "~2.0.4",
     "jasmine-terminal-reporter": "~0.9.1",
-    "istanbul": "^0.3.2",
+    "istanbul": "^0.4.5",
     "remark-cli": "~2.0.0",
     "remark-lint": "~5.0.1",
     "remark-preset-lint-recommended": "~1.0.0",
     "mock-fs": "~4.5.0",
     "tslint": "~5.4.3",
-    "typescript": "~2.6.1"
+    "typescript": "~2.8.1"
   },
   "typings": "lib/index.d.ts",
   "dependencies": {
